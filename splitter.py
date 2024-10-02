@@ -1,16 +1,17 @@
 import csv
 import os
-import argparse
 import logging
 from typing import List, Dict
 
-MAX_ROWS_PER_FILE = 1000000  # Adjust as needed
+# Set the maximum rows per file directly in the script
+MAX_ROWS_PER_FILE = 100000  # Adjust this value as needed
 INPUT_DIR = "input_csvs"
 OUTPUT_DIR = "output_csvs"
 
 def split_csv(input_file: str) -> None:
     base_name = os.path.splitext(os.path.basename(input_file))[0]
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    file_output_dir = os.path.join(OUTPUT_DIR, base_name)
+    os.makedirs(file_output_dir, exist_ok=True)
     
     with open(input_file, 'r', newline='') as csvfile:
         reader = csv.reader(csvfile)
@@ -27,7 +28,7 @@ def split_csv(input_file: str) -> None:
                     current_output.close()
                 
                 file_count += 1
-                output_file = os.path.join(OUTPUT_DIR, f"{base_name}_part{file_count}.csv")
+                output_file = os.path.join(file_output_dir, f"{base_name}_part{file_count}.csv")
                 current_output = open(output_file, 'w', newline='')
                 current_writer = csv.writer(current_output)
                 current_writer.writerow(headers)
@@ -38,21 +39,12 @@ def split_csv(input_file: str) -> None:
         if current_output:
             current_output.close()
     
-    logging.info(f"Split {input_file} into {file_count} files")
+    logging.info(f"Split {input_file} into {file_count} files in {file_output_dir}")
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     
-    parser = argparse.ArgumentParser(description="Split large CSV files into smaller ones")
-    parser.add_argument("--input-dir", default=INPUT_DIR, help="Input directory containing CSV files")
-    parser.add_argument("--output-dir", default=OUTPUT_DIR, help="Output directory for split CSV files")
-    parser.add_argument("--max-rows", type=int, default=MAX_ROWS_PER_FILE, help="Maximum rows per output file")
-    args = parser.parse_args()
-    
-    global INPUT_DIR, OUTPUT_DIR, MAX_ROWS_PER_FILE
-    INPUT_DIR = args.input_dir
-    OUTPUT_DIR = args.output_dir
-    MAX_ROWS_PER_FILE = args.max_rows
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
     
     csv_files = [f for f in os.listdir(INPUT_DIR) if f.endswith('.csv')]
     
