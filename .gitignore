@@ -1,0 +1,5 @@
+# Ignore all files in input_csvs directory
+input_csvs/*
+
+# But keep the input_csvs directory itself
+!input_csvs/.gitkeep
